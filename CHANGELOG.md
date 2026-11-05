@@ -2,6 +2,19 @@
 
 All notable changes to this project. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-11-05
+
+### Added
+- SiliconCast: the same app for Macs with Apple silicon (macOS 13 or newer), using ScreenCaptureKit capture and VideoToolbox hardware encoding, with 2K 60 fps defaults and a 15 fps preview.
+- RDNA Cast (Windows) and SiliconCast (Mac) now live in one repository and are released together: https://github.com/gkaragioul/cast
+- The Windows installer is built on GitHub (see `.github/workflows/windows-release.yml`).
+
+### Changed
+- One licence for everything: GPL-2.0-or-later, the same as OBS Studio. The separate MIT grant for RDNA Cast additions is gone. The names and logos are covered by TRADEMARKS.md.
+- THIRD_PARTY_LICENSES.md now lists what each app actually contains, and corrects the AMD AMF SDK licence (MIT).
+- Help links, the About box and the installer now point to the new repository.
+- Download file names no longer include the version: `RDNA-Cast-windows-setup.exe` and `SiliconCast-mac.dmg`.
+
 ## [0.7.28] - 2026-06-22
 
 ### Changed

@@ -4,10 +4,10 @@
 
 #include <QDialog>
 
-#define GK_OBS_LITE_VERSION "0.7.28"
+#define GK_OBS_LITE_VERSION "0.8.0"
 #define GK_OBS_LITE_PRODUCT_NAME "RDNA Cast"
-#define GK_OBS_LITE_RELEASES_REPO "gkaragioul/RDNA_Cast"
-#define GK_OBS_LITE_RELEASES_URL "https://github.com/gkaragioul/RDNA_Cast/releases/latest"
+#define GK_OBS_LITE_RELEASES_REPO "gkaragioul/cast"
+#define GK_OBS_LITE_RELEASES_URL "https://github.com/gkaragioul/cast/releases/latest"
 
 class GKAboutDialog : public QDialog {
 	Q_OBJECT

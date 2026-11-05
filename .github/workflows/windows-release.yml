@@ -1,0 +1,64 @@
+name: Windows build (RDNA Cast)
+
+# Builds the RDNA Cast Windows installer on GitHub's Windows machines.
+# Run it by hand from the Actions tab, giving the release tag (for example v0.8.0).
+# The installer is kept as a build artifact, and is also attached to that
+# release when one exists (drafts included).
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build and attach to (for example v0.8.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 150
+    steps:
+      - name: Check out the tagged source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Configure (amd-lite-x64)
+        shell: pwsh
+        run: cmake --preset amd-lite-x64
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build_amd_lite --config RelWithDebInfo --parallel
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Package the installer
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer.iss
+          Get-FileHash dist-installer\RDNA-Cast-windows-setup.exe -Algorithm SHA256 | Format-List
+
+      - name: Keep the installer as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RDNA-Cast-windows-setup
+          path: dist-installer/RDNA-Cast-windows-setup.exe
+
+      - name: Attach to the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ inputs.tag }}" --repo "${{ github.repository }}" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload "${{ inputs.tag }}" dist-installer/RDNA-Cast-windows-setup.exe --clobber --repo "${{ github.repository }}"
+          } else {
+            Write-Host "No release named ${{ inputs.tag }} yet; the installer is in the artifacts."
+          }

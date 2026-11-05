@@ -3,7 +3,7 @@
 
 #define MyAppName "RDNA Cast"
 #define MyAppNameShort "RDNACast"
-#define MyAppVersion "0.7.28"
+#define MyAppVersion "0.8.0"
 #define MyAppPublisher "George Karagioules"
 #define MyAppExeName "obs64.exe"
 ; New AppId for RDNA Cast (separate from legacy GK_OBS_Lite_AMD).
@@ -19,15 +19,15 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-AppPublisherURL=https://github.com/gkaragioul/RDNA_Cast
-AppSupportURL=https://github.com/gkaragioul/RDNA_Cast/issues
+AppPublisherURL=https://github.com/gkaragioul/cast
+AppSupportURL=https://github.com/gkaragioul/cast/issues
 DefaultDirName={autopf}\{#MyAppNameShort}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 UsePreviousAppDir=no
 LicenseFile=installer_assets\LICENSE.txt
 OutputDir=dist-installer
-OutputBaseFilename=RDNA_Cast_Setup_{#MyAppVersion}
+OutputBaseFilename=RDNA-Cast-windows-setup
 Compression=lzma2
 SolidCompression=yes
 SetupIconFile=UI\cmake\windows\obs-studio.ico
@@ -71,6 +71,7 @@ Source: "installer_assets\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "COPYING"; DestDir: "{app}"; Flags: ignoreversion
 Source: "AUTHORS"; DestDir: "{app}"; Flags: ignoreversion
 Source: "THIRD_PARTY_LICENSES.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "TRADEMARKS.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Dirs]
 ; Pre-create config directory with user write permissions

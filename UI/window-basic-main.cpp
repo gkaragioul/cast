@@ -7923,8 +7923,8 @@ void OBSBasic::on_actionHelpPortal_triggered()
 
 void OBSBasic::on_actionWebsite_triggered()
 {
-#ifdef OBS_AMD_LITE
-	QUrl url = QUrl("https://www.georgekaragioules.com", QUrl::TolerantMode);
+#if defined(OBS_AMD_LITE) || defined(OBS_MAC_LITE)
+	QUrl url = QUrl("https://github.com/gkaragioul/cast", QUrl::TolerantMode);
 #else
 	QUrl url = QUrl("https://obsproject.com", QUrl::TolerantMode);
 #endif

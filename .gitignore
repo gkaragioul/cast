@@ -6,11 +6,13 @@
 !/installer.iss
 !/installer_assets
 !/Logo.png
-!/CLAUDE.md
 !/README.md
 !/CHANGELOG.md
 !/THIRD_PARTY_LICENSES.md
-!/RDNA_CAST_ADDITIONS_LICENSE.md
+!/TRADEMARKS.md
+!/build-siliconcast-macos.sh
+!/SiliconCast.png
+!/images
 !/ROADMAP.md
 !/setup_youtube_credentials.bat
 

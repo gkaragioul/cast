@@ -1,196 +1,92 @@
-<p align="center">
-  <img src="installer_assets/rdnacast_logo.png" alt="SiliconCast" width="280">
-</p>
+[← All software](https://github.com/gkaragioul/software)
 
-<h1 align="center">SiliconCast</h1>
+# RDNA Cast and SiliconCast
 
-<p align="center">
-  <strong>Low-overhead 2K recording &amp; streaming for macOS and Apple Silicon.</strong><br>
-  <em>A lightweight OBS Studio fork tuned for ScreenCaptureKit, VideoToolbox, and minimal game FPS impact.</em>
-</p>
+<img src="images/screenshot-1.jpg" alt="RDNA Cast on Windows, showing the one-click optimizer, and SiliconCast on a Mac" width="100%">
 
-<p align="center">
-  <a href="#building-siliconcast-for-macos">Build</a> &bull;
-  <a href="#features">Features</a> &bull;
-  <a href="#performance">Performance</a> &bull;
-  <a href="#rdna-cast-legacy-windows-build">RDNA Cast Legacy</a>
-</p>
+A lighter version of OBS Studio for recording and streaming your games, with less effect on your frame rate. **RDNA Cast** is the Windows app for AMD Radeon graphics cards, and **SiliconCast** is the Mac app for Apple silicon.
 
-## App Screenshots
+| | |
+|---|---|
+| **Download** | [⬇️ Windows (RDNA Cast)](https://github.com/gkaragioul/cast/releases/latest/download/RDNA-Cast-windows-setup.exe) · [⬇️ Mac (SiliconCast)](https://github.com/gkaragioul/cast/releases/latest/download/SiliconCast-mac.dmg) |
+| **Version** | ![latest version](https://img.shields.io/github/v/release/gkaragioul/cast?label=) · [what's new](https://github.com/gkaragioul/cast/releases) |
+| **Runs on** | Windows 10 or 11 (64-bit), with an AMD Radeon card (RX 5000 series or newer) · Macs with Apple silicon (M1 or newer), macOS 13 or newer |
+| **Price** | Free |
+| **Licence** | GPL-2.0-or-later, like OBS Studio: free to use, change and share |
 
-<p align="center">
-  <img src="docs/screenshots/rdna-cast-app-1.png" alt="RDNA Cast main window" width="32%">
-  <img src="docs/screenshots/rdna-cast-output-optimizer.png" alt="RDNA Cast output optimizer" width="32%">
-  <img src="docs/screenshots/rdna-cast-app-3.png" alt="RDNA Cast settings" width="32%">
-</p>
+## What it does
 
----
+- **Records and streams** to YouTube, Twitch and other services, like OBS Studio, with the same scenes, sources and audio mixer.
+- **Uses your graphics card's own encoder:** AMD's on Windows (AV1, HEVC or H.264), Apple's VideoToolbox on the Mac. Your processor stays free for the game.
+- **Smaller and lighter:** it keeps only the parts you need for recording and streaming. On Windows that's 11 plugins instead of 36, and it uses far less memory than stock OBS.
+- **Draws the preview less often** (the recording still gets every frame), so the game keeps more of your graphics card.
+- **Sensible settings from the start:** 1440p at 60 fps, with a bitrate to match.
+- **One-click optimizer (Windows):** Settings › Output shows your PC's specs and suggests the best settings. Click **Apply Recommended Settings**.
+- **Closes to the tray (Windows):** clicking ✕ keeps it running in the background, and the tray icon has Stream, Record and Save Replay.
+- **Fixes for AMD encoding:** steadier bitrate on AV1, smaller bitrate spikes, and no dropped frames when a stream starts.
 
-## Disclaimer
+<img src="images/rdna-cast-settings.jpg" alt="RDNA Cast's Output settings: PC specs, Apply Recommended Settings, AMD AV1 encoder at the Speed preset" width="100%">
 
-**SiliconCast is an independent open-source project.** It is **not affiliated with, endorsed by, or sponsored by** Apple Inc., Advanced Micro Devices, Inc., or the OBS Project. "Apple", "macOS", "Apple Silicon", "AMD", "Radeon", and "RDNA" are trademarks of their respective owners, used only descriptively to indicate target hardware compatibility.
+## Install
 
-SiliconCast is a fork of [OBS Studio](https://obsproject.com), redistributed under the GNU General Public License v2.0. See [COPYING](COPYING) for the full GPL text and [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for bundled-library licenses.
+### On Windows (RDNA Cast)
 
-## What is this?
+1. **Download** the Windows file above.
+2. **Double-click `RDNA-Cast-windows-setup.exe`.** If Windows shows **"Windows protected your PC"**, click **More info**, then **Run anyway**. This is normal for apps from small developers.
+3. Follow the installer. It replaces any older RDNA Cast and keeps your settings.
+4. Open **RDNA Cast** from the Start menu.
 
-SiliconCast is a **lightweight fork of [OBS Studio](https://obsproject.com) 31.0.3**, built for **macOS gaming capture on Apple Silicon**. It keeps the native macOS capture and encoder stack, strips heavyweight optional modules, defaults to 2560x1440 at 60 FPS, and uses Apple VideoToolbox hardware encoding to reduce the FPS loss seen with stock OBS setups.
+### On a Mac (SiliconCast)
 
-## Performance
+1. **Download** the Mac file above.
+2. **Open** it, and **drag SiliconCast onto the Applications folder**.
+3. **Double-click SiliconCast** in Applications. macOS says it was **"Not Opened"**. This is normal for apps that aren't sold through Apple. Click **Done**.
+4. **Allow it once:** open **Apple menu › System Settings › Privacy & Security**, scroll down to **Security**, and next to "SiliconCast was blocked" click **Open Anyway**, then **Open Anyway** again.
+5. **Give it permission to record:** SiliconCast opens a **Review App Permissions** window. Allow **Screen & System Audio Recording**, and **Microphone** if you want your voice. macOS may ask you to reopen the app afterwards.
 
-| Metric | Stock OBS 31.0.3 | SiliconCast target |
-|--------|-------------------|-----------|
-| **Plugin modules** | Broad stock plugin set | **Minimal native Mac set** |
-| **Preview GPU load** | Full preview refresh | **15 FPS default preview throttle** |
-| **Streaming output** | User-configured | **2560x1440 @ 60 FPS target** |
-| **Encoder path** | User-configured | **Apple VideoToolbox hardware** |
-| **Gaming FPS impact** | 20-30 FPS loss reported | **Target: low single-digit FPS hit** |
+## How to use it
 
-## Features
+1. The first time it opens, the **Auto-Configuration Wizard** asks whether you want to stream or record, and picks settings for your computer. On Windows, you can also use **Settings › Output › Apply Recommended Settings** at any time.
+2. Under **Sources**, click **+** and add what to capture: **Game Capture** or **Display Capture** on Windows, **macOS Screen Capture** on the Mac.
+3. To stream, go to **Settings › Stream**, choose your service and sign in or paste your stream key.
+4. Click **Start Recording** or **Start Streaming**.
 
-### SiliconCast macOS
-- **Apple VideoToolbox defaults** — H.264 for streaming compatibility, HEVC for recording when available
-- **2K-first output** — defaults to up to 2560x1440 at 60 FPS instead of OBS's conservative 720p/30 initial profile
-- **Preview throttling** — preview defaults to an efficient 15 FPS while output remains full FPS
-- **Minimal native plugin set** — ScreenCaptureKit capture, AVFoundation capture, CoreAudio AAC, VideoToolbox, outputs, filters, transitions, image/text sources, and x264 fallback
-- **Reduced encoder texture pressure** — smaller GPU encode queue for lite builds
-- **No browser, websocket, WebRTC, DeckLink, AJA, VST, VLC, or scripting in the default SiliconCast build**
+If you've used OBS Studio before, everything works the way you're used to.
 
-### RDNA Cast Legacy Windows Core
-- **AMD-first encoder defaults** — AMF HEVC is the default encoder. Dropdown: AMD AV1 > HEVC > H.264 > x264 fallback
-- **11 plugins** instead of 36 — only what you need for streaming and recording
-- **AVX2 + /favor:AMD64 compiler optimizations** — built for Zen 3+ instruction scheduling
-- **D3D11-only rendering** — AMD's best-optimized driver path on Windows
+## Privacy
 
-### RDNA Cast Legacy Gaming-Friendly
-- **Preview throttled to ~40 FPS** — GPU renders preview every 4th frame instead of 165 FPS. Encoder still gets every frame at full quality
-- **Pre-analysis disabled** — eliminates the AMF pre-encode pass that steals GPU cycles from your game
-- **Reduced GPU encode textures** (10 → 6) — frees VRAM for game textures
-- **Reduced async frame cache** (30 → 12) — less memory pressure
-- **No profiler overhead** in the render loop
+- No accounts, no ads and no tracking. It doesn't send anything about you anywhere.
+- It only connects to the internet when you stream, or when you sign in to a streaming service.
+- It doesn't check for updates by itself. New versions are on the [releases page](https://github.com/gkaragioul/cast/releases), and on Windows **Help › GitHub Releases** opens it.
+- Your recordings are saved where you choose in **Settings › Output**. SiliconCast keeps its settings in `~/Library/Application Support/siliconcast`.
 
-### UX
-- **Portable by default** — settings, scenes, profiles live next to the executable
-- **Close-to-tray** — X minimizes to system tray (like Steam/AMD Adrenalin). Recording keeps running
-- **Tray controls** — right-click for Stream, Record, Replay Buffer, Save Replay, Exit
-- **GitHub Releases updates** — Help → GitHub Releases opens the official release page for installers
-- **About dialog** with GPLv2-or-later, MIT additions, and bundled-library notices
-- **Windows installer** with custom branding via Inno Setup
+## If something goes wrong
 
-### AMD Encoder Fixes
+- **The recording is black on the Mac:** open **System Settings › Privacy & Security › Screen & System Audio Recording**, turn SiliconCast on, then quit and reopen it.
+- **The AMD encoder is missing on Windows:** update your Radeon driver from [amd.com/support](https://www.amd.com/en/support). Without it, RDNA Cast falls back to the x264 encoder, which uses your processor.
+- **To report a problem:** [open an issue](https://github.com/gkaragioul/cast/issues), say which app and version you use, and attach the log from **Help › Log Files › Show Log Files**.
+- **To uninstall:** on Windows, use **Settings › Apps**. On the Mac, drag SiliconCast to the Bin, and delete `~/Library/Application Support/siliconcast` to remove its settings.
 
-These fixes address long-standing AMD AMF issues reported across [OBS #12013](https://github.com/obsproject/obs-studio/issues/12013), [OBS #12512](https://github.com/obsproject/obs-studio/issues/12512), [AMF #465](https://github.com/GPUOpen-LibrariesAndSDKs/AMF/issues/465), and [AMF #323](https://github.com/GPUOpen-LibrariesAndSDKs/AMF/issues/323):
+## Build it yourself
 
-| Fix | Problem | Solution |
-|-----|---------|----------|
-| **AV1 filler data bug** | Stock OBS compares AV1 rate control against H.264 enum constants — filler data never activates for AV1 CBR. Causes bitrate drops to 0 on static scenes. | Use correct `AMF_VIDEO_ENCODER_AV1_RATE_CONTROL_METHOD_CBR` enum |
-| **VBV buffer too large** | Stock OBS sets VBV = 1 full second of bitrate, allowing spikes up to ~2x target before correction | VBV = 500ms (`bitrate / 2`) — cuts maximum spike in half |
-| **Startup encoder overload** | H.264 pre-analysis (`PREENCODE_ENABLE`) consumes first GOP, causing 2-3 second frame drops at stream start | Pre-analysis disabled |
-| **HQCBR filler data** | High Quality CBR mode didn't enable filler data on any codec | Filler data now enabled for both CBR and HQCBR on H.264, HEVC, and AV1 |
+Both apps are built from this one source tree.
 
-## Target Hardware
+**Mac** (Xcode and CMake 3.28 or newer):
 
-| Component | Recommended |
-|-----------|-------------|
-| **CPU/GPU** | Apple Silicon Mac |
-| **OS** | macOS 14+ with ScreenCaptureKit support |
-| **Output** | 2560x1440 at 60 FPS |
-| **Encoder** | Apple VideoToolbox H.264 / HEVC |
-
-Intel Macs may build through the stock macOS path, but SiliconCast is optimized for Apple Silicon first.
-
-## What's Removed From Legacy RDNA Cast
-
-### Non-AMD Encoders
-- `obs-nvenc` — NVIDIA GPU encoder
-- `obs-qsv11` — Intel Quick Sync Video
-- `nv-filters` — NVIDIA GPU filters
-
-### Non-Windows Platform Code
-- `libobs-opengl`, `libobs-metal`, all macOS/Linux/BSD plugins
-
-### Heavyweight Optional Plugins
-- `obs-browser` — Chromium (can be re-enabled with `-DENABLE_BROWSER=ON`)
-- `obs-websocket`, `obs-webrtc`, `vlc-video`, `decklink`, `aja`, `obs-vst`, `text-freetype2`, `obs-libfdk`
-- Lua/Python scripting, frontend-tools plugin
-
-### What Remains (11 core plugins)
-
-| Plugin | Purpose |
-|--------|---------|
-| `obs-ffmpeg` | FFmpeg muxing + **AMF hardware encoder** (H.264, HEVC, AV1) |
-| `obs-x264` | Software H.264 fallback |
-| `obs-filters` | Video/audio filters |
-| `obs-transitions` | Scene transitions |
-| `obs-outputs` | RTMP, SRT, RIST streaming + recording |
-| `obs-text` | Windows text rendering |
-| `image-source` | Image/slideshow sources |
-| `rtmp-services` | Streaming service configs (Twitch, YouTube, etc.) |
-| `win-capture` | Window, game, and monitor capture |
-| `win-dshow` | Webcams and capture cards (DirectShow) |
-| `win-wasapi` | Windows audio capture/output |
-
-## Building SiliconCast for macOS
-
-### Prerequisites
-- Full Xcode 15.1+ with the macOS 14.2+ SDK
-- CMake 3.28+
-- Git
-
-### Quick Build
 ```bash
 ./build-siliconcast-macos.sh
 ```
 
-Equivalent manual commands:
-```bash
-cmake --preset siliconcast-macos
-cmake --build build_siliconcast_macos --config RelWithDebInfo --parallel
-```
+**Windows** (Visual Studio 2022, CMake and Inno Setup): run `build.bat`. The [Windows build workflow](.github/workflows/windows-release.yml) does the same on GitHub's own build machines.
 
-The SiliconCast build is controlled by `OBS_MAC_LITE=ON`.
+The Windows build uses the `amd-lite-x64` preset (`OBS_AMD_LITE`) and the Mac build uses `siliconcast-macos` (`OBS_MAC_LITE`). With neither, you get stock OBS Studio 31.0.3.
 
-## RDNA Cast Legacy Windows Build
+## Licence and credits
 
-### Prerequisites
-- Visual Studio 2022 (Community or BuildTools) with **Desktop development with C++** workload + ATL
-- CMake 3.28+
-- Git
-- Inno Setup 6 (for installer, optional)
+- **Licence:** RDNA Cast and SiliconCast are free software under the GNU General Public License, version 2 or later, the same licence as OBS Studio (see [COPYING](COPYING)). You can use, change and share them. If you share a changed version, share its source code too.
+- **Built on [OBS Studio](https://obsproject.com)** 31.0.3, by Hugh Bailey and the OBS contributors. Thank you.
+- **Other people's code** in the apps keeps its own licence: see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+- **Names and logos:** "RDNA Cast", "SiliconCast" and their logos are not part of the GPL. See [TRADEMARKS.md](TRADEMARKS.md).
+- **History:** see [CHANGELOG.md](CHANGELOG.md).
 
-### Quick Build
-```cmd
-git clone https://github.com/gkaragioul/RDNA_Cast.git
-cd RDNA_Cast
-cmake --preset amd-lite-x64
-cmake --build build_amd_lite --config RelWithDebInfo --parallel
-```
-
-### With Browser Source
-```cmd
-cmake --preset amd-lite-x64 -DENABLE_BROWSER=ON -DENABLE_WEBSOCKET=ON
-cmake --build build_amd_lite --config RelWithDebInfo --parallel
-```
-
-### Full Build + Installer
-Run `build.bat` — handles CMake configure, build, and Inno Setup packaging in one step.
-
-## How It Works
-
-SiliconCast changes are gated behind the `OBS_MAC_LITE` CMake flag and `#ifdef OBS_MAC_LITE` preprocessor guards. The legacy RDNA Cast Windows path remains gated behind `OBS_AMD_LITE`. Building without either flag produces stock OBS Studio behavior.
-
-## Credits
-
-- [OBS Studio](https://obsproject.com) by the OBS Project — the foundation this project is built on
-- [AMD AMF SDK](https://github.com/GPUOpen-LibrariesAndSDKs/AMF) — hardware encoding interface
-- All upstream OBS contributors listed in [AUTHORS](AUTHORS)
-
-If you use RDNA Cast and want to support the upstream project that makes it possible, please **[contribute to OBS Studio](https://obsproject.com/contribute)**.
-
-## License
-
-SiliconCast is an OBS Studio fork. The combined application and binary distributions are redistributed under the **GNU General Public License v2.0 or later**; see [COPYING](COPYING).
-
-Original RDNA Cast additions are also offered under the **MIT License** by George Karagioules; see [RDNA_CAST_ADDITIONS_LICENSE.md](RDNA_CAST_ADDITIONS_LICENSE.md). That MIT grant applies only to original RDNA Cast additions and does not relicense OBS Studio or the combined OBS-derived application.
-
-Bundled third-party libraries retain their own licenses. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md). Installers ship `LICENSE.txt`, `COPYING`, `AUTHORS`, and `THIRD_PARTY_LICENSES.md` alongside the application.
+*Not affiliated with, endorsed by or sponsored by the OBS Project, AMD or Apple. "AMD", "Radeon" and "RDNA" are trademarks of Advanced Micro Devices, Inc. "Apple", "Mac" and "macOS" are trademarks of Apple Inc. Made by [George Karangioules](https://github.com/gkaragioul).*

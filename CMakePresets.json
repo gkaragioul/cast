@@ -64,6 +64,8 @@
       "binaryDir": "${sourceDir}/build_siliconcast_macos",
       "cacheVariables": {
         "CMAKE_OSX_ARCHITECTURES": {"type": "STRING", "value": "arm64"},
+        "CMAKE_OSX_DEPLOYMENT_TARGET": {"type": "STRING", "value": "13.0"},
+        "CMAKE_COMPILE_WARNING_AS_ERROR": false,
         "ENABLE_BROWSER": false,
         "ENABLE_WEBSOCKET": false,
         "ENABLE_SCRIPTING": false,
@@ -75,7 +77,8 @@
         "ENABLE_HEVC": true,
         "SPARKLE_APPCAST_URL": {"type": "STRING", "value": ""},
         "SPARKLE_PUBLIC_KEY": {"type": "STRING", "value": ""},
-        "OBS_MAC_LITE": true
+        "OBS_MAC_LITE": true,
+        "OBS_VERSION_OVERRIDE": {"type": "STRING", "value": "0.8.0"}
       }
     },
     {
@@ -155,7 +158,8 @@
         "ENABLE_WEBRTC": false,
         "ENABLE_HEVC": true,
         "ENABLE_FREETYPE": false,
-        "OBS_AMD_LITE": true
+        "OBS_AMD_LITE": true,
+        "OBS_VERSION_OVERRIDE": {"type": "STRING", "value": "0.8.0"}
       }
     },
     {
