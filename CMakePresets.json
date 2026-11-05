@@ -57,6 +57,28 @@
       }
     },
     {
+      "name": "siliconcast-macos",
+      "displayName": "SiliconCast macOS",
+      "description": "Lightweight Apple Silicon build optimized for low-overhead 2K streaming and recording",
+      "inherits": ["macos"],
+      "binaryDir": "${sourceDir}/build_siliconcast_macos",
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": {"type": "STRING", "value": "arm64"},
+        "ENABLE_BROWSER": false,
+        "ENABLE_WEBSOCKET": false,
+        "ENABLE_SCRIPTING": false,
+        "ENABLE_AJA": false,
+        "ENABLE_DECKLINK": false,
+        "ENABLE_VLC": false,
+        "ENABLE_VST": false,
+        "ENABLE_WEBRTC": false,
+        "ENABLE_HEVC": true,
+        "SPARKLE_APPCAST_URL": {"type": "STRING", "value": ""},
+        "SPARKLE_PUBLIC_KEY": {"type": "STRING", "value": ""},
+        "OBS_MAC_LITE": true
+      }
+    },
+    {
       "name": "ubuntu",
       "displayName": "Ubuntu",
       "description": "obs-studio for Ubuntu",

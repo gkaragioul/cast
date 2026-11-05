@@ -1,20 +1,19 @@
 <p align="center">
-  <img src="installer_assets/rdnacast_logo.png" alt="RDNA Cast" width="280">
+  <img src="installer_assets/rdnacast_logo.png" alt="SiliconCast" width="280">
 </p>
 
-<h1 align="center">RDNA Cast</h1>
+<h1 align="center">SiliconCast</h1>
 
 <p align="center">
-  <strong>High-performance video recording &amp; streaming for AMD Radeon. Gaming unleashed.</strong><br>
-  <em>~85% less RAM than stock OBS. Fixes AMD bitrate spikes. Built for gamers.</em>
+  <strong>Low-overhead 2K recording &amp; streaming for macOS and Apple Silicon.</strong><br>
+  <em>A lightweight OBS Studio fork tuned for ScreenCaptureKit, VideoToolbox, and minimal game FPS impact.</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/gkaragioul/RDNA_Cast/releases/latest">Download</a> &bull;
+  <a href="#building-siliconcast-for-macos">Build</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#performance">Performance</a> &bull;
-  <a href="#amd-encoder-fixes">AMD Fixes</a> &bull;
-  <a href="#building">Building</a>
+  <a href="#rdna-cast-legacy-windows-build">RDNA Cast Legacy</a>
 </p>
 
 ## App Screenshots
@@ -29,34 +28,41 @@
 
 ## Disclaimer
 
-**RDNA Cast is an independent open-source project.** It is **not affiliated with, endorsed by, or sponsored by** Advanced Micro Devices, Inc. or the OBS Project. "AMD", "Radeon", and "RDNA" are trademarks of Advanced Micro Devices, Inc., used here only descriptively to indicate target hardware compatibility.
+**SiliconCast is an independent open-source project.** It is **not affiliated with, endorsed by, or sponsored by** Apple Inc., Advanced Micro Devices, Inc., or the OBS Project. "Apple", "macOS", "Apple Silicon", "AMD", "Radeon", and "RDNA" are trademarks of their respective owners, used only descriptively to indicate target hardware compatibility.
 
-RDNA Cast is a fork of [OBS Studio](https://obsproject.com), redistributed under the GNU General Public License v2.0. See [COPYING](COPYING) for the full GPL text and [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for bundled-library licenses.
+SiliconCast is a fork of [OBS Studio](https://obsproject.com), redistributed under the GNU General Public License v2.0. See [COPYING](COPYING) for the full GPL text and [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for bundled-library licenses.
 
 ## What is this?
 
-RDNA Cast is a **lightweight fork of [OBS Studio](https://obsproject.com) 31.0.3**, built exclusively for **AMD hardware on Windows**. It strips out everything you don't need, optimizes what's left for AMD Zen 3+ CPUs and RDNA GPUs, and **fixes real AMD encoder bugs** that cause bitrate spikes and drops during streaming.
+SiliconCast is a **lightweight fork of [OBS Studio](https://obsproject.com) 31.0.3**, built for **macOS gaming capture on Apple Silicon**. It keeps the native macOS capture and encoder stack, strips heavyweight optional modules, defaults to 2560x1440 at 60 FPS, and uses Apple VideoToolbox hardware encoding to reduce the FPS loss seen with stock OBS setups.
 
 ## Performance
 
-| Metric | Stock OBS 31.0.3 | RDNA Cast |
+| Metric | Stock OBS 31.0.3 | SiliconCast target |
 |--------|-------------------|-----------|
-| **RAM (idle)** | ~300-400 MB | **~52 MB** |
-| **Threads** | ~50-60 | **~15** |
-| **Plugin DLLs** | ~30+ | **12** |
-| **Disk size** | ~500+ MB | **139 MB** (installer) |
-| **Preview GPU load** | Full refresh rate (165 FPS) | **~40 FPS** (throttled) |
-| **Gaming FPS impact** | 20-30 FPS loss reported | **Significantly reduced** |
+| **Plugin modules** | Broad stock plugin set | **Minimal native Mac set** |
+| **Preview GPU load** | Full preview refresh | **15 FPS default preview throttle** |
+| **Streaming output** | User-configured | **2560x1440 @ 60 FPS target** |
+| **Encoder path** | User-configured | **Apple VideoToolbox hardware** |
+| **Gaming FPS impact** | 20-30 FPS loss reported | **Target: low single-digit FPS hit** |
 
 ## Features
 
-### Core
+### SiliconCast macOS
+- **Apple VideoToolbox defaults** — H.264 for streaming compatibility, HEVC for recording when available
+- **2K-first output** — defaults to up to 2560x1440 at 60 FPS instead of OBS's conservative 720p/30 initial profile
+- **Preview throttling** — preview defaults to an efficient 15 FPS while output remains full FPS
+- **Minimal native plugin set** — ScreenCaptureKit capture, AVFoundation capture, CoreAudio AAC, VideoToolbox, outputs, filters, transitions, image/text sources, and x264 fallback
+- **Reduced encoder texture pressure** — smaller GPU encode queue for lite builds
+- **No browser, websocket, WebRTC, DeckLink, AJA, VST, VLC, or scripting in the default SiliconCast build**
+
+### RDNA Cast Legacy Windows Core
 - **AMD-first encoder defaults** — AMF HEVC is the default encoder. Dropdown: AMD AV1 > HEVC > H.264 > x264 fallback
 - **11 plugins** instead of 36 — only what you need for streaming and recording
 - **AVX2 + /favor:AMD64 compiler optimizations** — built for Zen 3+ instruction scheduling
 - **D3D11-only rendering** — AMD's best-optimized driver path on Windows
 
-### Gaming-Friendly
+### RDNA Cast Legacy Gaming-Friendly
 - **Preview throttled to ~40 FPS** — GPU renders preview every 4th frame instead of 165 FPS. Encoder still gets every frame at full quality
 - **Pre-analysis disabled** — eliminates the AMF pre-encode pass that steals GPU cycles from your game
 - **Reduced GPU encode textures** (10 → 6) — frees VRAM for game textures
@@ -84,16 +90,16 @@ These fixes address long-standing AMD AMF issues reported across [OBS #12013](ht
 
 ## Target Hardware
 
-| Component | Tested On |
-|-----------|-----------|
-| **CPU** | AMD Ryzen 7 5700X3D (Zen 3, 8C/16T) |
-| **GPU** | AMD Radeon RX 9070 XT (RDNA 4) |
-| **RAM** | 32GB DDR4 |
-| **OS** | Windows 11 Pro |
+| Component | Recommended |
+|-----------|-------------|
+| **CPU/GPU** | Apple Silicon Mac |
+| **OS** | macOS 14+ with ScreenCaptureKit support |
+| **Output** | 2560x1440 at 60 FPS |
+| **Encoder** | Apple VideoToolbox H.264 / HEVC |
 
-Any AMD system with a Zen 2+ CPU and RDNA+ GPU should work. AVX2 required (all Zen CPUs support this).
+Intel Macs may build through the stock macOS path, but SiliconCast is optimized for Apple Silicon first.
 
-## What's Removed
+## What's Removed From Legacy RDNA Cast
 
 ### Non-AMD Encoders
 - `obs-nvenc` — NVIDIA GPU encoder
@@ -124,7 +130,27 @@ Any AMD system with a Zen 2+ CPU and RDNA+ GPU should work. AVX2 required (all Z
 | `win-dshow` | Webcams and capture cards (DirectShow) |
 | `win-wasapi` | Windows audio capture/output |
 
-## Building
+## Building SiliconCast for macOS
+
+### Prerequisites
+- Full Xcode 15.1+ with the macOS 14.2+ SDK
+- CMake 3.28+
+- Git
+
+### Quick Build
+```bash
+./build-siliconcast-macos.sh
+```
+
+Equivalent manual commands:
+```bash
+cmake --preset siliconcast-macos
+cmake --build build_siliconcast_macos --config RelWithDebInfo --parallel
+```
+
+The SiliconCast build is controlled by `OBS_MAC_LITE=ON`.
+
+## RDNA Cast Legacy Windows Build
 
 ### Prerequisites
 - Visual Studio 2022 (Community or BuildTools) with **Desktop development with C++** workload + ATL
@@ -151,7 +177,7 @@ Run `build.bat` — handles CMake configure, build, and Inno Setup packaging in 
 
 ## How It Works
 
-All RDNA Cast changes are gated behind the `OBS_AMD_LITE` CMake flag and `#ifdef OBS_AMD_LITE` preprocessor guards. Building without the flag produces stock OBS Studio. This makes upstream merges from [obsproject/obs-studio](https://github.com/obsproject/obs-studio) straightforward.
+SiliconCast changes are gated behind the `OBS_MAC_LITE` CMake flag and `#ifdef OBS_MAC_LITE` preprocessor guards. The legacy RDNA Cast Windows path remains gated behind `OBS_AMD_LITE`. Building without either flag produces stock OBS Studio behavior.
 
 ## Credits
 
@@ -163,7 +189,7 @@ If you use RDNA Cast and want to support the upstream project that makes it poss
 
 ## License
 
-RDNA Cast is an OBS Studio fork. The combined application and binary distributions are redistributed under the **GNU General Public License v2.0 or later**; see [COPYING](COPYING).
+SiliconCast is an OBS Studio fork. The combined application and binary distributions are redistributed under the **GNU General Public License v2.0 or later**; see [COPYING](COPYING).
 
 Original RDNA Cast additions are also offered under the **MIT License** by George Karagioules. That MIT grant applies only to original RDNA Cast additions and does not relicense OBS Studio or the combined OBS-derived application.
 

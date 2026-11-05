@@ -40,10 +40,26 @@ function(set_target_properties_obs target)
   # Target is a GUI or CLI application
   if(target_type STREQUAL EXECUTABLE)
     if(target STREQUAL obs-studio)
+      if(OBS_MAC_LITE)
+        set(_obs_bundle_output_name SiliconCast)
+        set(_obs_bundle_product_name SiliconCast)
+        set(_obs_bundle_identifier com.gkaragioul.siliconcast)
+        set(_obs_bundle_display_name SiliconCast)
+        set(_obs_camera_usage "SiliconCast needs camera access to enable camera sources.")
+        set(_obs_microphone_usage "SiliconCast needs microphone access to capture audio.")
+      else()
+        set(_obs_bundle_output_name OBS)
+        set(_obs_bundle_product_name OBS)
+        set(_obs_bundle_identifier com.obsproject.obs-studio)
+        set(_obs_bundle_display_name "OBS Studio")
+        set(_obs_camera_usage "OBS needs to access the camera to enable camera sources to work.")
+        set(_obs_microphone_usage "OBS needs to access the microphone to enable audio input.")
+      endif()
+
       set_target_properties(
         ${target}
         PROPERTIES
-          OUTPUT_NAME OBS
+          OUTPUT_NAME ${_obs_bundle_output_name}
           MACOSX_BUNDLE TRUE
           MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos/Info.plist.in"
           XCODE_EMBED_FRAMEWORKS_REMOVE_HEADERS_ON_COPY YES
@@ -54,8 +70,8 @@ function(set_target_properties_obs target)
 
       set_target_xcode_properties(
         ${target}
-        PROPERTIES PRODUCT_BUNDLE_IDENTIFIER com.obsproject.obs-studio
-                   PRODUCT_NAME OBS
+        PROPERTIES PRODUCT_BUNDLE_IDENTIFIER ${_obs_bundle_identifier}
+                   PRODUCT_NAME ${_obs_bundle_product_name}
                    ASSETCATALOG_COMPILER_APPICON_NAME AppIcon
                    CURRENT_PROJECT_VERSION ${OBS_BUILD_NUMBER}
                    MARKETING_VERSION ${OBS_VERSION_CANONICAL}
@@ -64,10 +80,10 @@ function(set_target_properties_obs target)
                    CLANG_ENABLE_OBJC_ARC YES
                    SKIP_INSTALL NO
                    INSTALL_PATH "$(LOCAL_APPS_DIR)"
-                   INFOPLIST_KEY_CFBundleDisplayName "OBS Studio"
+                   INFOPLIST_KEY_CFBundleDisplayName "${_obs_bundle_display_name}"
                    INFOPLIST_KEY_NSHumanReadableCopyright "(c) 2012-${CURRENT_YEAR} Lain Bailey"
-                   INFOPLIST_KEY_NSCameraUsageDescription "OBS needs to access the camera to enable camera sources to work."
-                   INFOPLIST_KEY_NSMicrophoneUsageDescription "OBS needs to access the microphone to enable audio input."
+                   INFOPLIST_KEY_NSCameraUsageDescription "${_obs_camera_usage}"
+                   INFOPLIST_KEY_NSMicrophoneUsageDescription "${_obs_microphone_usage}"
       )
 
       get_property(obs_dependencies GLOBAL PROPERTY _OBS_DEPENDENCIES)

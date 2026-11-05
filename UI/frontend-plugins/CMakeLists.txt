@@ -1,4 +1,4 @@
-if(NOT OBS_AMD_LITE)
+if(NOT OBS_AMD_LITE AND NOT OBS_MAC_LITE)
   add_subdirectory(aja-output-ui)
   add_subdirectory(decklink-captions)
   add_subdirectory(decklink-output-ui)

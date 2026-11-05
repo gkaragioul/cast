@@ -23,9 +23,26 @@ set_property(CACHE CMAKE_OSX_ARCHITECTURES PROPERTY STRINGS arm64 x86_64)
 # Ensure recent enough Xcode and platform SDK
 set(_obs_macos_minimum_sdk 14.2) # Keep in sync with Xcode
 set(_obs_macos_minimum_xcode 15.1) # Keep in sync with SDK
+if(NOT CMAKE_OSX_SYSROOT)
+  execute_process(
+    COMMAND xcrun --sdk macosx --show-sdk-path
+    OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+  set(CMAKE_OSX_SYSROOT "${CMAKE_OSX_SYSROOT}" CACHE PATH "macOS SDK path" FORCE)
+endif()
 message(DEBUG "macOS SDK Path: ${CMAKE_OSX_SYSROOT}")
-string(REGEX MATCH ".+/MacOSX.platform/Developer/SDKs/MacOSX([0-9]+\\.[0-9])+\\.sdk$" _ ${CMAKE_OSX_SYSROOT})
-set(_obs_macos_current_sdk ${CMAKE_MATCH_1})
+string(REGEX MATCH ".+/MacOSX.platform/Developer/SDKs/MacOSX([0-9]+(\\.[0-9]+)*)\\.sdk$" _ "${CMAKE_OSX_SYSROOT}")
+set(_obs_macos_current_sdk "${CMAKE_MATCH_1}")
+if(NOT _obs_macos_current_sdk)
+  execute_process(
+    COMMAND xcrun --sdk macosx --show-sdk-version
+    OUTPUT_VARIABLE _obs_macos_current_sdk
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+endif()
 message(DEBUG "macOS SDK version: ${_obs_macos_current_sdk}")
 if(_obs_macos_current_sdk VERSION_LESS _obs_macos_minimum_sdk)
   message(
@@ -71,7 +88,12 @@ add_compile_definitions(
   $<$<NOT:$<COMPILE_LANGUAGE:Swift>>:$<$<CONFIG:DEBUG>:DEBUG>>
   $<$<NOT:$<COMPILE_LANGUAGE:Swift>>:$<$<CONFIG:DEBUG>:_DEBUG>>
   $<$<NOT:$<COMPILE_LANGUAGE:Swift>>:SIMDE_ENABLE_OPENMP>
+  $<$<NOT:$<COMPILE_LANGUAGE:Swift>>:$<$<BOOL:${OBS_MAC_LITE}>:OBS_MAC_LITE>>
 )
+
+if(OBS_MAC_LITE)
+  message(STATUS "SiliconCast: Apple Silicon/macOS lite optimizations enabled")
+endif()
 
 if(ENABLE_COMPILER_TRACE)
   add_compile_options(

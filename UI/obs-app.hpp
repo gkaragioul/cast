@@ -43,6 +43,17 @@
 #include "window-main.hpp"
 #include "obs-app-theming.hpp"
 
+#if defined(OBS_MAC_LITE)
+#define OBS_CONFIG_SUBDIR "siliconcast"
+#define OBS_LITE_PRODUCT_NAME "SiliconCast"
+#elif defined(OBS_AMD_LITE)
+#define OBS_CONFIG_SUBDIR "rdnacast"
+#define OBS_LITE_PRODUCT_NAME "RDNA Cast"
+#else
+#define OBS_CONFIG_SUBDIR "obs-studio"
+#define OBS_LITE_PRODUCT_NAME "OBS Studio"
+#endif
+
 std::string CurrentTimeString();
 std::string CurrentDateTimeString();
 std::string GenerateTimeDateFilename(const char *extension, bool noSpace = false);

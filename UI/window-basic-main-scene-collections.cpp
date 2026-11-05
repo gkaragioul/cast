@@ -32,7 +32,7 @@
 
 // MARK: Constant Expressions
 
-constexpr std::string_view OBSSceneCollectionPath = "/rdnacast/basic/scenes/";
+constexpr std::string_view OBSSceneCollectionPath = "/" OBS_CONFIG_SUBDIR "/basic/scenes/";
 
 // MARK: - Anonymous Namespace
 namespace {

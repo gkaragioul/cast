@@ -4,6 +4,13 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCO
 
 project(obs-studio VERSION ${OBS_VERSION_CANONICAL})
 
+option(OBS_AMD_LITE "Build OBS Lite AMD Edition (AMD-only, minimal footprint)" OFF)
+option(OBS_MAC_LITE "Build SiliconCast (Apple Silicon/macOS minimal footprint)" OFF)
+
+if(OBS_MAC_LITE)
+  set(OBS_PRODUCT_NAME "SiliconCast")
+endif()
+
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
   include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/windows/architecture.cmake")
   if(NOT OBS_PARENT_ARCHITECTURE STREQUAL CMAKE_VS_PLATFORM_NAME)
@@ -18,7 +25,6 @@ include(helpers)
 option(ENABLE_UI "Enable building with UI (requires Qt)" ON)
 option(ENABLE_SCRIPTING "Enable scripting support" OFF)
 option(ENABLE_HEVC "Enable HEVC encoders" ON)
-option(OBS_AMD_LITE "Build OBS Lite AMD Edition (AMD-only, minimal footprint)" OFF)
 
 add_subdirectory(libobs)
 if(OS_WINDOWS)
@@ -32,7 +38,7 @@ endif()
 
 add_subdirectory(plugins)
 
-if(NOT OBS_AMD_LITE)
+if(NOT OBS_AMD_LITE AND NOT OBS_MAC_LITE)
   add_subdirectory(test/test-input)
 endif()
 

@@ -500,7 +500,7 @@ bool GetUnusedName(std::string &name)
 	return true;
 }
 
-constexpr std::string_view OBSSceneCollectionPath = "rdnacast/basic/scenes/";
+constexpr std::string_view OBSSceneCollectionPath = OBS_CONFIG_SUBDIR "/basic/scenes/";
 
 void OBSImporter::importCollections()
 {

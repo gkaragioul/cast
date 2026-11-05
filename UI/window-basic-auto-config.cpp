@@ -1147,9 +1147,15 @@ inline const char *AutoConfig::GetEncoderId(Encoder enc)
 		return SIMPLE_ENCODER_AMD;
 #endif
 	case Encoder::Apple:
+#ifdef OBS_MAC_LITE
 		return SIMPLE_ENCODER_APPLE_H264;
+#else
+		return SIMPLE_ENCODER_APPLE_H264;
+#endif
 	default:
-#ifdef OBS_AMD_LITE
+#ifdef OBS_MAC_LITE
+		return SIMPLE_ENCODER_APPLE_H264;
+#elif defined(OBS_AMD_LITE)
 		return SIMPLE_ENCODER_AMD;
 #else
 		return SIMPLE_ENCODER_X264;

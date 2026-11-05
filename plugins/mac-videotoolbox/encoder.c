@@ -531,8 +531,9 @@ static OSStatus create_encoder(struct vt_encoder *enc)
 					     kVTCompressionPropertyKey_AllowFrameReordering,
 					     kVTCompressionPropertyKey_ProfileLevel};
 
-		SInt32 key_frame_interval = (SInt32)(enc->keyint * ((float)enc->fps_num / enc->fps_den));
-		float expected_framerate = (float)enc->fps_num / enc->fps_den;
+		SInt32 key_frame_interval =
+			(SInt32)((float)enc->keyint * ((float)enc->fps_num / (float)enc->fps_den));
+		float expected_framerate = (float)enc->fps_num / (float)enc->fps_den;
 		CFNumberRef MaxKeyFrameInterval =
 			CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &key_frame_interval);
 		CFNumberRef ExpectedFrameRate =
@@ -1336,16 +1337,28 @@ static void vt_defaults(obs_data_t *settings, void *data)
 			obs_data_set_default_string(settings, "rate_control", "CBR");
 		}
 	}
+#ifdef OBS_MAC_LITE
+	obs_data_set_default_int(settings, "bitrate", 12000);
+#else
 	obs_data_set_default_int(settings, "bitrate", 2500);
+#endif
 	obs_data_set_default_int(settings, "quality", 60);
 	obs_data_set_default_bool(settings, "limit_bitrate", false);
+#ifdef OBS_MAC_LITE
+	obs_data_set_default_int(settings, "max_bitrate", 12000);
+#else
 	obs_data_set_default_int(settings, "max_bitrate", 2500);
+#endif
 	obs_data_set_default_double(settings, "max_bitrate_window", 1.5f);
 	obs_data_set_default_int(settings, "keyint_sec", 2);
 	obs_data_set_default_string(settings, "profile",
 				    type_data->codec_type == kCMVideoCodecType_H264 ? "high" : "main");
 	obs_data_set_default_int(settings, "codec_type", kCMVideoCodecType_AppleProRes422);
+#ifdef OBS_MAC_LITE
+	obs_data_set_default_bool(settings, "bframes", false);
+#else
 	obs_data_set_default_bool(settings, "bframes", true);
+#endif
 }
 
 static void vt_free_type_data(void *data)

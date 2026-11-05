@@ -22,12 +22,17 @@
 #include "obs-internal.h"
 #include "graphics/vec4.h"
 
-#ifdef OBS_AMD_LITE
+#if defined(OBS_AMD_LITE) || defined(OBS_MAC_LITE)
 /* Preview FPS divisor: configurable from UI.
  * active = when streaming/recording, idle = when nothing is running.
  * Higher value = fewer preview frames = less CPU/GPU used. */
+#ifdef OBS_MAC_LITE
+static volatile long preview_fps_active_divisor = 4;
+static volatile long preview_fps_idle_divisor = 6;
+#else
 static volatile long preview_fps_active_divisor = 2;
 static volatile long preview_fps_idle_divisor = 4;
+#endif
 
 void obs_set_preview_fps_divisor(int active_divisor, int idle_divisor)
 {
@@ -1141,8 +1146,8 @@ bool obs_graphics_thread_loop(struct obs_graphics_context *context)
 	output_frames();
 	profile_end(output_frame_name);
 
-#ifdef OBS_AMD_LITE
-	/* OBS Lite AMD Edition: Adaptive preview throttle.
+#if defined(OBS_AMD_LITE) || defined(OBS_MAC_LITE)
+	/* Lite builds: Adaptive preview throttle.
 	 * Divisors are configurable from UI via obs_set_preview_fps_divisor(). */
 	{
 		static uint64_t display_frame_counter = 0;

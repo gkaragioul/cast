@@ -493,7 +493,11 @@ void OBSApp::InitUserConfigDefaults()
 	config_set_default_bool(userConfig, "BasicWindow", "CenterSnapping", false);
 	config_set_default_double(userConfig, "BasicWindow", "SnapDistance", 10.0);
 	config_set_default_bool(userConfig, "BasicWindow", "SpacingHelpersEnabled", true);
+#ifdef OBS_MAC_LITE
+	config_set_default_bool(userConfig, "BasicWindow", "RecordWhenStreaming", true);
+#else
 	config_set_default_bool(userConfig, "BasicWindow", "RecordWhenStreaming", false);
+#endif
 	config_set_default_bool(userConfig, "BasicWindow", "KeepRecordingWhenStreamStops", false);
 	config_set_default_bool(userConfig, "BasicWindow", "SysTrayEnabled", true);
 #ifdef OBS_AMD_LITE
@@ -543,36 +547,36 @@ static bool MakeUserDirs()
 {
 	char path[512];
 
-	if (GetAppConfigPath(path, sizeof(path), "rdnacast/basic") <= 0)
+	if (GetAppConfigPath(path, sizeof(path), OBS_CONFIG_SUBDIR "/basic") <= 0)
 		return false;
 	if (!do_mkdir(path))
 		return false;
 
-	if (GetAppConfigPath(path, sizeof(path), "rdnacast/logs") <= 0)
+	if (GetAppConfigPath(path, sizeof(path), OBS_CONFIG_SUBDIR "/logs") <= 0)
 		return false;
 	if (!do_mkdir(path))
 		return false;
 
-	if (GetAppConfigPath(path, sizeof(path), "rdnacast/profiler_data") <= 0)
+	if (GetAppConfigPath(path, sizeof(path), OBS_CONFIG_SUBDIR "/profiler_data") <= 0)
 		return false;
 	if (!do_mkdir(path))
 		return false;
 
 #ifdef _WIN32
-	if (GetAppConfigPath(path, sizeof(path), "rdnacast/crashes") <= 0)
+	if (GetAppConfigPath(path, sizeof(path), OBS_CONFIG_SUBDIR "/crashes") <= 0)
 		return false;
 	if (!do_mkdir(path))
 		return false;
 #endif
 
 #ifdef WHATSNEW_ENABLED
-	if (GetAppConfigPath(path, sizeof(path), "rdnacast/updates") <= 0)
+	if (GetAppConfigPath(path, sizeof(path), OBS_CONFIG_SUBDIR "/updates") <= 0)
 		return false;
 	if (!do_mkdir(path))
 		return false;
 #endif
 
-	if (GetAppConfigPath(path, sizeof(path), "rdnacast/plugin_config") <= 0)
+	if (GetAppConfigPath(path, sizeof(path), OBS_CONFIG_SUBDIR "/plugin_config") <= 0)
 		return false;
 	if (!do_mkdir(path))
 		return false;
@@ -580,8 +584,8 @@ static bool MakeUserDirs()
 	return true;
 }
 
-constexpr std::string_view OBSProfileSubDirectory = "rdnacast/basic/profiles";
-constexpr std::string_view OBSScenesSubDirectory = "rdnacast/basic/scenes";
+constexpr std::string_view OBSProfileSubDirectory = OBS_CONFIG_SUBDIR "/basic/profiles";
+constexpr std::string_view OBSScenesSubDirectory = OBS_CONFIG_SUBDIR "/basic/scenes";
 
 static bool MakeUserProfileDirs()
 {
@@ -649,7 +653,7 @@ bool OBSApp::InitGlobalConfig()
 {
 	char path[512];
 
-	int len = GetAppConfigPath(path, sizeof(path), "rdnacast/global.ini");
+	int len = GetAppConfigPath(path, sizeof(path), OBS_CONFIG_SUBDIR "/global.ini");
 	if (len <= 0) {
 		return false;
 	}
@@ -698,7 +702,7 @@ bool OBSApp::InitGlobalConfig()
 
 bool OBSApp::InitUserConfig(std::filesystem::path &userConfigLocation, uint32_t lastVersion)
 {
-	const std::string userConfigFile = userConfigLocation.u8string() + "/rdnacast/user.ini";
+	const std::string userConfigFile = userConfigLocation.u8string() + "/" OBS_CONFIG_SUBDIR "/user.ini";
 
 	int errorCode = userConfig.Open(userConfigFile.c_str(), CONFIG_OPEN_ALWAYS);
 
@@ -758,8 +762,8 @@ void OBSApp::MigrateLegacySettings(const uint32_t lastVersion)
 	}
 }
 
-static constexpr string_view OBSGlobalIniPath = "/rdnacast/global.ini";
-static constexpr string_view OBSUserIniPath = "/rdnacast/user.ini";
+static constexpr string_view OBSGlobalIniPath = "/" OBS_CONFIG_SUBDIR "/global.ini";
+static constexpr string_view OBSUserIniPath = "/" OBS_CONFIG_SUBDIR "/user.ini";
 
 bool OBSApp::MigrateGlobalSettings()
 {
@@ -911,7 +915,7 @@ bool LoadBranchesFile(vector<UpdateBranch> &out)
 	string error;
 	string branchesText;
 
-	BPtr<char> branchesFilePath = GetAppConfigPathPtr("rdnacast/updates/branches.json");
+	BPtr<char> branchesFilePath = GetAppConfigPathPtr(OBS_CONFIG_SUBDIR "/updates/branches.json");
 
 	QFile branchesFile(branchesFilePath.Get());
 	if (!branchesFile.open(QIODevice::ReadOnly)) {
@@ -1038,7 +1042,7 @@ static void move_basic_to_profiles(void)
 {
 	char path[512];
 
-	if (GetAppConfigPath(path, 512, "rdnacast/basic") <= 0) {
+	if (GetAppConfigPath(path, 512, OBS_CONFIG_SUBDIR "/basic") <= 0) {
 		return;
 	}
 
@@ -1049,7 +1053,7 @@ static void move_basic_to_profiles(void)
 	}
 
 	const std::filesystem::path profilesPath =
-		App()->userProfilesLocation / std::filesystem::u8path("rdnacast/basic/profiles");
+		App()->userProfilesLocation / std::filesystem::u8path(OBS_CONFIG_SUBDIR "/basic/profiles");
 
 	if (std::filesystem::exists(profilesPath)) {
 		return;
@@ -1102,7 +1106,7 @@ static void move_basic_to_scene_collections(void)
 {
 	char path[512];
 
-	if (GetAppConfigPath(path, 512, "rdnacast/basic") <= 0) {
+	if (GetAppConfigPath(path, 512, OBS_CONFIG_SUBDIR "/basic") <= 0) {
 		return;
 	}
 
@@ -1113,7 +1117,7 @@ static void move_basic_to_scene_collections(void)
 	}
 
 	const std::filesystem::path sceneCollectionPath =
-		App()->userScenesLocation / std::filesystem::u8path("rdnacast/basic/scenes");
+		App()->userScenesLocation / std::filesystem::u8path(OBS_CONFIG_SUBDIR "/basic/scenes");
 
 	if (std::filesystem::exists(sceneCollectionPath)) {
 		return;
@@ -1129,6 +1133,10 @@ static void move_basic_to_scene_collections(void)
 	}
 
 	const std::filesystem::path sourceFile = basicPath / std::filesystem::u8path("scenes.json");
+	if (!std::filesystem::exists(sourceFile)) {
+		return;
+	}
+
 	const std::filesystem::path destinationFile =
 		(sceneCollectionPath / std::filesystem::u8path(Str("Untitled"))).replace_extension(".json");
 
@@ -1229,7 +1237,7 @@ static bool StartupOBS(const char *locale, profiler_name_store_t *store)
 {
 	char path[512];
 
-	if (GetAppConfigPath(path, sizeof(path), "rdnacast/plugin_config") <= 0)
+	if (GetAppConfigPath(path, sizeof(path), OBS_CONFIG_SUBDIR "/plugin_config") <= 0)
 		return false;
 
 	return obs_startup(locale, path, store);
@@ -1848,13 +1856,13 @@ static void create_log_file(fstream &logFile)
 {
 	stringstream dst;
 
-	get_last_log(false, "rdnacast/logs", lastLogFile);
+	get_last_log(false, OBS_CONFIG_SUBDIR "/logs", lastLogFile);
 #ifdef _WIN32
-	get_last_log(true, "rdnacast/crashes", lastCrashLogFile);
+	get_last_log(true, OBS_CONFIG_SUBDIR "/crashes", lastCrashLogFile);
 #endif
 
 	currentLogFile = GenerateTimeDateFilename("txt");
-	dst << "rdnacast/logs/" << currentLogFile.c_str();
+	dst << OBS_CONFIG_SUBDIR "/logs/" << currentLogFile.c_str();
 
 	BPtr<char> path(GetAppConfigPathPtr(dst.str().c_str()));
 
@@ -1867,7 +1875,7 @@ static void create_log_file(fstream &logFile)
 #endif
 
 	if (logFile.is_open()) {
-		delete_oldest_file(false, "rdnacast/logs");
+		delete_oldest_file(false, OBS_CONFIG_SUBDIR "/logs");
 		base_set_log_handler(do_log, &logFile);
 	} else {
 		blog(LOG_ERROR, "Failed to open log file");
@@ -1907,7 +1915,7 @@ static void SaveProfilerData(const ProfilerSnapshot &snap)
 
 #define LITERAL_SIZE(x) x, (sizeof(x) - 1)
 	ostringstream dst;
-	dst.write(LITERAL_SIZE("rdnacast/profiler_data/"));
+	dst.write(LITERAL_SIZE(OBS_CONFIG_SUBDIR "/profiler_data/"));
 	dst.write(currentLogFile.c_str(), pos);
 	dst.write(LITERAL_SIZE(".csv.gz"));
 #undef LITERAL_SIZE
@@ -1997,7 +2005,7 @@ static int run_program(fstream &logFile, int argc, char *argv[])
 		bool created_log = false;
 
 		program.AppInit();
-		delete_oldest_file(false, "rdnacast/profiler_data");
+		delete_oldest_file(false, OBS_CONFIG_SUBDIR "/profiler_data");
 
 		OBSTranslator translator;
 		program.installTranslator(&translator);
@@ -2118,7 +2126,11 @@ static int run_program(fstream &logFile, int argc, char *argv[])
 
 #ifdef __APPLE__
 		MacPermissionStatus audio_permission = CheckPermission(kAudioDeviceAccess);
+#ifdef OBS_MAC_LITE
+		MacPermissionStatus video_permission = kPermissionAuthorized;
+#else
 		MacPermissionStatus video_permission = CheckPermission(kVideoDeviceAccess);
+#endif
 		MacPermissionStatus accessibility_permission = CheckPermission(kAccessibility);
 		MacPermissionStatus screen_permission = CheckPermission(kScreenCapture);
 
@@ -2194,7 +2206,7 @@ static void main_crash_handler(const char *format, va_list args, void * /* param
 	vsnprintf(text, MAX_CRASH_REPORT_SIZE, format, args);
 	text[MAX_CRASH_REPORT_SIZE - 1] = 0;
 
-	string crashFilePath = "rdnacast/crashes";
+	string crashFilePath = OBS_CONFIG_SUBDIR "/crashes";
 
 	delete_oldest_file(true, crashFilePath.c_str());
 
@@ -2426,7 +2438,7 @@ static void check_safe_mode_sentinel(void)
 	if (disable_shutdown_check)
 		return;
 
-	BPtr sentinelPath = GetAppConfigPathPtr("rdnacast/safe_mode");
+	BPtr sentinelPath = GetAppConfigPathPtr(OBS_CONFIG_SUBDIR "/safe_mode");
 	if (os_file_exists(sentinelPath)) {
 		unclean_shutdown = true;
 		return;
@@ -2441,7 +2453,7 @@ static void delete_safe_mode_sentinel(void)
 #ifndef NDEBUG
 	return;
 #else
-	BPtr sentinelPath = GetAppConfigPathPtr("rdnacast/safe_mode");
+	BPtr sentinelPath = GetAppConfigPathPtr(OBS_CONFIG_SUBDIR "/safe_mode");
 	os_unlink(sentinelPath);
 #endif
 }
@@ -2667,7 +2679,11 @@ int main(int argc, char *argv[])
 			exit(0);
 
 		} else if (arg_is(argv[i], "--version", "-V")) {
+#ifdef OBS_MAC_LITE
+			std::cout << "SiliconCast - " << App()->GetVersionString(false) << "\n";
+#else
 			std::cout << "OBS Studio - " << App()->GetVersionString(false) << "\n";
+#endif
 			exit(0);
 		}
 	}

@@ -20,7 +20,6 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 ## [0.7.24] - 2026-05-19
 
 ### Added
-- Added a PC Specs & Auto Optimize section to Settings > Output that shows CPU, memory, AMD GPU generation/VRAM, output resolution/FPS, and recording drive free space.
 - Added a one-button optimizer that saves low-impact streaming and recording settings using available AMD hardware encoders, Speed preset, platform-friendly bitrate, AAC audio, hybrid MP4 recording, and High Quality / Medium File Size recording.
 
 ## [0.7.23] - 2026-05-19
