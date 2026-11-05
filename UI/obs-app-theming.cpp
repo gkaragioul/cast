@@ -407,7 +407,7 @@ void OBSApp::FindThemes()
 	}
 
 	{
-		const std::string themeDir = App()->userConfigLocation.u8string() + "/rdnacast/themes";
+		const std::string themeDir = App()->userConfigLocation.u8string() + "/" OBS_CONFIG_SUBDIR "/themes";
 
 		QDirIterator it(QString::fromStdString(themeDir), filters, QDir::Files);
 
@@ -814,7 +814,7 @@ bool OBSApp::SetTheme(const QString &name)
 
 #ifdef _DEBUG
 	/* Write resulting QSS to file in config dir "themes" folder. */
-	string filename("rdnacast/themes/");
+	string filename(OBS_CONFIG_SUBDIR "/themes/");
 	filename += theme->id.toStdString();
 	filename += ".out";
 
@@ -882,7 +882,7 @@ bool OBSApp::InitTheme()
 	}
 
 	char userDir[512];
-	if (GetAppConfigPath(userDir, sizeof(userDir), "rdnacast/themes")) {
+	if (GetAppConfigPath(userDir, sizeof(userDir), OBS_CONFIG_SUBDIR "/themes")) {
 		auto configSearchDir = filesystem::u8path(userDir);
 		QDir::addSearchPath("theme", absolute(configSearchDir));
 	}

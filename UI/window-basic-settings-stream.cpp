@@ -1667,7 +1667,23 @@ void OBSBasicSettings::ResetEncoders(bool streamOnly)
 
 #define ENCODER_STR(str) QTStr("Basic.Settings.Output.Simple.Encoder." str)
 
-#ifdef OBS_AMD_LITE
+#ifdef OBS_MAC_LITE
+	if (service_supports_encoder(vcodecs, "com.apple.videotoolbox.videoencoder.ave.avc")) {
+		if (__builtin_available(macOS 13.0, *)) {
+			ui->simpleOutStrEncoder->addItem(ENCODER_STR("Hardware.Apple.H264"),
+							 QString(SIMPLE_ENCODER_APPLE_H264));
+		}
+	}
+#ifdef ENABLE_HEVC
+	if (service_supports_encoder(vcodecs, "com.apple.videotoolbox.videoencoder.ave.hevc")) {
+		if (__builtin_available(macOS 13.0, *)) {
+			ui->simpleOutStrEncoder->addItem(ENCODER_STR("Hardware.Apple.HEVC"),
+							 QString(SIMPLE_ENCODER_APPLE_HEVC));
+		}
+	}
+#endif
+	ui->simpleOutStrEncoder->addItem(ENCODER_STR("Software"), QString(SIMPLE_ENCODER_X264));
+#elif defined(OBS_AMD_LITE)
 	auto setEncoderTooltip = [&](const QString &tip) {
 		int lastIdx = ui->simpleOutStrEncoder->count() - 1;
 		if (lastIdx >= 0)
@@ -1724,9 +1740,9 @@ void OBSBasicSettings::ResetEncoders(bool streamOnly)
 		ui->simpleOutStrEncoder->addItem(ENCODER_STR("Hardware.AMD.H264"), QString(SIMPLE_ENCODER_AMD));
 	if (service_supports_encoder(vcodecs, "av1_texture_amf"))
 		ui->simpleOutStrEncoder->addItem(ENCODER_STR("Hardware.AMD.AV1"), QString(SIMPLE_ENCODER_AMD_AV1));
-#endif /* OBS_AMD_LITE */
+#endif /* OBS_MAC_LITE / OBS_AMD_LITE */
 /* Preprocessor guard required for the macOS version check */
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(OBS_MAC_LITE)
 	if (service_supports_encoder(vcodecs, "com.apple.videotoolbox.videoencoder.ave.avc")
 #ifndef __aarch64__
 	    && os_get_emulation_status() == true

@@ -49,7 +49,7 @@
 #define NUM_TEXTURES 2
 #define NUM_CHANNELS 3
 #define MICROSECOND_DEN 1000000
-#ifdef OBS_AMD_LITE
+#if defined(OBS_AMD_LITE) || defined(OBS_MAC_LITE)
 #define NUM_ENCODE_TEXTURES 6
 #else
 #define NUM_ENCODE_TEXTURES 10

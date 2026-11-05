@@ -33,7 +33,7 @@
 
 // MARK: Constant Expressions
 
-constexpr std::string_view OBSProfilePath = "/rdnacast/basic/profiles/";
+constexpr std::string_view OBSProfilePath = "/" OBS_CONFIG_SUBDIR "/basic/profiles/";
 constexpr std::string_view OBSProfileSettingsFile = "basic.ini";
 
 // MARK: Forward Declarations

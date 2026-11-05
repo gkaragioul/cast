@@ -794,6 +794,14 @@ void SimpleOutput::Update()
 	obs_data_set_string(videoSettings, "rate_control", "CBR");
 	obs_data_set_int(videoSettings, "bitrate", videoBitrate);
 
+#ifdef OBS_MAC_LITE
+	if (strcmp(encoder, SIMPLE_ENCODER_APPLE_H264) == 0 ||
+	    strcmp(encoder, SIMPLE_ENCODER_APPLE_HEVC) == 0) {
+		obs_data_set_int(videoSettings, "keyint_sec", 2);
+		obs_data_set_bool(videoSettings, "bframes", false);
+	}
+#endif
+
 #ifdef OBS_AMD_LITE
 	/* OBS Lite AMD: Optimal streaming encoder flags for AMD hardware.
 	 * - vbaq: adaptive quantization for better quality at same bitrate
@@ -1108,6 +1116,10 @@ std::shared_future<void> SimpleOutput::SetupStreaming(obs_service_t *service, Se
 
 	const char *type = GetStreamOutputType(service);
 	if (!type) {
+#ifdef OBS_MAC_LITE
+		blog(LOG_WARNING, "SiliconCast: no stream output type is compatible with service '%s'",
+		     obs_service_get_id(service));
+#endif
 		continuation(false);
 		return StartMultitrackVideoStreamingGuard::MakeReadyFuture();
 	}

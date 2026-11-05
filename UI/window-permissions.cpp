@@ -29,6 +29,12 @@ OBSPermissions::OBSPermissions(QWidget *parent, MacPermissionStatus capture, Mac
 	SetStatus(ui->videoPermissionButton, video, QTStr("MacPermissions.Item.Camera"));
 	SetStatus(ui->audioPermissionButton, audio, QTStr("MacPermissions.Item.Microphone"));
 	SetStatus(ui->accessibilityPermissionButton, accessibility, QTStr("MacPermissions.Item.Accessibility"));
+
+#ifdef OBS_MAC_LITE
+	ui->label_7->hide();
+	ui->label_8->hide();
+	ui->videoPermissionButton->hide();
+#endif
 }
 
 void OBSPermissions::SetStatus(QPushButton *btn, MacPermissionStatus status, const QString &preference)

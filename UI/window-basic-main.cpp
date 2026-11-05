@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <ctime>
+#include <algorithm>
 #include <functional>
 #include <unordered_set>
 #include <obs-data.h>
@@ -37,6 +38,7 @@
 #include <QScrollBar>
 #include <QTextStream>
 #include <QActionGroup>
+#include <QTimer>
 #include <qt-wrappers.hpp>
 
 #include <util/dstr.h>
@@ -203,11 +205,11 @@ static void AddExtraModulePaths()
 
 	char base_module_dir[512];
 #if defined(_WIN32)
-	int ret = GetProgramDataPath(base_module_dir, sizeof(base_module_dir), "rdnacast/plugins/%module%");
+	int ret = GetProgramDataPath(base_module_dir, sizeof(base_module_dir), OBS_CONFIG_SUBDIR "/plugins/%module%");
 #elif defined(__APPLE__)
-	int ret = GetAppConfigPath(base_module_dir, sizeof(base_module_dir), "rdnacast/plugins/%module%.plugin");
+	int ret = GetAppConfigPath(base_module_dir, sizeof(base_module_dir), OBS_CONFIG_SUBDIR "/plugins/%module%.plugin");
 #else
-	int ret = GetAppConfigPath(base_module_dir, sizeof(base_module_dir), "rdnacast/plugins/%module%");
+	int ret = GetAppConfigPath(base_module_dir, sizeof(base_module_dir), OBS_CONFIG_SUBDIR "/plugins/%module%");
 #endif
 
 	if (ret <= 0)
@@ -221,13 +223,13 @@ static void AddExtraModulePaths()
 #ifndef __aarch64__
 	/* Legacy System Library Search Path */
 	char system_legacy_module_dir[PATH_MAX];
-	GetProgramDataPath(system_legacy_module_dir, sizeof(system_legacy_module_dir), "rdnacast/plugins/%module%");
+	GetProgramDataPath(system_legacy_module_dir, sizeof(system_legacy_module_dir), OBS_CONFIG_SUBDIR "/plugins/%module%");
 	std::string path_system_legacy = system_legacy_module_dir;
 	obs_add_module_path((path_system_legacy + "/bin").c_str(), (path_system_legacy + "/data").c_str());
 
 	/* Legacy User Application Support Search Path */
 	char user_legacy_module_dir[PATH_MAX];
-	GetAppConfigPath(user_legacy_module_dir, sizeof(user_legacy_module_dir), "rdnacast/plugins/%module%");
+	GetAppConfigPath(user_legacy_module_dir, sizeof(user_legacy_module_dir), OBS_CONFIG_SUBDIR "/plugins/%module%");
 	std::string path_user_legacy = user_legacy_module_dir;
 	obs_add_module_path((path_user_legacy + "/bin").c_str(), (path_user_legacy + "/data").c_str());
 #endif
@@ -475,8 +477,8 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	connect(this, &OBSBasic::CanvasResized, ui->previewScalingMode, &OBSPreviewScalingComboBox::CanvasResized);
 	connect(this, &OBSBasic::OutputResized, ui->previewScalingMode, &OBSPreviewScalingComboBox::OutputResized);
 
-#ifdef OBS_AMD_LITE
-	/* OBS Lite AMD: Configurable preview FPS to balance smoothness vs performance.
+#if defined(OBS_AMD_LITE) || defined(OBS_MAC_LITE)
+	/* Lite builds: Configurable preview FPS to balance smoothness vs performance.
 	 * Data format: "active_divisor,idle_divisor" */
 	ui->previewFpsCombo->addItem("Full (60 FPS)", "1,2");
 	ui->previewFpsCombo->addItem("Smooth (30 FPS)", "2,4");
@@ -487,7 +489,11 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	{
 		int savedIdx = config_get_int(App()->GetUserConfig(), "BasicWindow", "PreviewFpsIndex");
 		if (savedIdx < 0 || savedIdx >= ui->previewFpsCombo->count())
+#ifdef OBS_MAC_LITE
+			savedIdx = 3; /* default: Efficient (15 FPS) */
+#else
 			savedIdx = 1; /* default: Smooth (30 FPS) */
+#endif
 		ui->previewFpsCombo->setCurrentIndex(savedIdx);
 
 		/* Apply the saved setting immediately */
@@ -526,7 +532,7 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	cpuUsageInfo = os_cpu_usage_info_start();
 	cpuUsageTimer = new QTimer(this);
 	connect(cpuUsageTimer.data(), &QTimer::timeout, ui->statusbar, &OBSBasicStatusBar::UpdateCPUUsage);
-#ifdef OBS_AMD_LITE
+#if defined(OBS_AMD_LITE) || defined(OBS_MAC_LITE)
 	cpuUsageTimer->start(10000);
 #else
 	cpuUsageTimer->start(3000);
@@ -1502,16 +1508,35 @@ retryScene:
 	if (!opt_starting_scene.empty())
 		opt_starting_scene.clear();
 
-	if (opt_start_streaming && !safe_mode) {
+	const bool startedStreamingFromCli = opt_start_streaming && !safe_mode;
+
+	if (startedStreamingFromCli) {
 		blog(LOG_INFO, "Starting stream due to command line parameter");
+#ifdef OBS_MAC_LITE
+		QTimer::singleShot(1500, this, [this] { StartStreaming(); });
+#else
 		QMetaObject::invokeMethod(this, "StartStreaming", Qt::QueuedConnection);
+#endif
 		opt_start_streaming = false;
 	}
 
 	if (opt_start_recording && !safe_mode) {
+#ifdef OBS_MAC_LITE
+		if (startedStreamingFromCli &&
+		    config_get_bool(App()->GetUserConfig(), "BasicWindow", "RecordWhenStreaming")) {
+			blog(LOG_INFO, "Skipping separate recording autostart; SiliconCast will record when streaming starts");
+			opt_start_recording = false;
+		} else
+#endif
+		{
 		blog(LOG_INFO, "Starting recording due to command line parameter");
+#ifdef OBS_MAC_LITE
+		QTimer::singleShot(2500, this, [this] { StartRecording(); });
+#else
 		QMetaObject::invokeMethod(this, "StartRecording", Qt::QueuedConnection);
+#endif
 		opt_start_recording = false;
+		}
 	}
 
 	if (opt_start_replaybuffer && !safe_mode) {
@@ -1624,7 +1649,9 @@ bool OBSBasic::InitService()
 	return true;
 }
 
+#ifndef OBS_MAC_LITE
 static const double scaled_vals[] = {1.0, 1.25, (1.0 / 0.75), 1.5, (1.0 / 0.6), 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 0.0};
+#endif
 
 extern void CheckExistingCookieId();
 
@@ -1779,7 +1806,7 @@ bool OBSBasic::InitBasicConfigDefaults()
 
 	config_set_default_string(activeConfiguration, "SimpleOutput", "FilePath", GetDefaultVideoSavePath().c_str());
 	config_set_default_string(activeConfiguration, "SimpleOutput", "RecFormat2", DEFAULT_CONTAINER);
-#ifdef OBS_AMD_LITE
+#if defined(OBS_AMD_LITE) || defined(OBS_MAC_LITE)
 	/* OBS Lite AMD: Smart bitrate default based on output resolution */
 	{
 		uint32_t out_cx = config_get_uint(activeConfiguration, "Video", "OutputCX");
@@ -1787,8 +1814,13 @@ bool OBSBasic::InitBasicConfigDefaults()
 		uint32_t pixels = out_cx * out_cy;
 		uint32_t defaultBitrate;
 		if (pixels >= 3840 * 2160)       defaultBitrate = 20000; /* 4K */
+#ifdef OBS_MAC_LITE
+		else if (pixels >= 2560 * 1440)  defaultBitrate = 12000; /* 1440p */
+		else if (pixels >= 1920 * 1080)  defaultBitrate = 8000;  /* 1080p */
+#else
 		else if (pixels >= 2560 * 1440)  defaultBitrate = 9000;  /* 1440p */
 		else if (pixels >= 1920 * 1080)  defaultBitrate = 6000;  /* 1080p */
+#endif
 		else                             defaultBitrate = 3000;  /* 720p */
 		config_set_default_uint(activeConfiguration, "SimpleOutput", "VBitrate", defaultBitrate);
 	}
@@ -1878,9 +1910,19 @@ bool OBSBasic::InitBasicConfigDefaults()
 	config_set_default_bool(activeConfiguration, "Output", "NewSocketLoopEnable", false);
 	config_set_default_bool(activeConfiguration, "Output", "LowLatencyEnable", false);
 
-	int i = 0;
 	uint32_t scale_cx = cx;
 	uint32_t scale_cy = cy;
+
+#ifdef OBS_MAC_LITE
+	scale_cx = cx;
+	scale_cy = cy;
+	if (scale_cx * scale_cy > 2560 * 1440) {
+		const double scale = std::max(double(scale_cx) / 2560.0, double(scale_cy) / 1440.0);
+		scale_cx = uint32_t(double(scale_cx) / scale);
+		scale_cy = uint32_t(double(scale_cy) / scale);
+	}
+#else
+	int i = 0;
 
 	/* use a default scaled resolution that has a pixel count no higher
 	 * than 1280x720 */
@@ -1889,6 +1931,7 @@ bool OBSBasic::InitBasicConfigDefaults()
 		scale_cx = uint32_t(double(cx) / scale);
 		scale_cy = uint32_t(double(cy) / scale);
 	}
+#endif
 
 	config_set_default_uint(activeConfiguration, "Video", "OutputCX", scale_cx);
 	config_set_default_uint(activeConfiguration, "Video", "OutputCY", scale_cy);
@@ -1903,9 +1946,15 @@ bool OBSBasic::InitBasicConfigDefaults()
 	}
 
 	config_set_default_uint(activeConfiguration, "Video", "FPSType", 0);
+#ifdef OBS_MAC_LITE
+	config_set_default_string(activeConfiguration, "Video", "FPSCommon", "60");
+	config_set_default_uint(activeConfiguration, "Video", "FPSInt", 60);
+	config_set_default_uint(activeConfiguration, "Video", "FPSNum", 60);
+#else
 	config_set_default_string(activeConfiguration, "Video", "FPSCommon", "30");
 	config_set_default_uint(activeConfiguration, "Video", "FPSInt", 30);
 	config_set_default_uint(activeConfiguration, "Video", "FPSNum", 30);
+#endif
 	config_set_default_uint(activeConfiguration, "Video", "FPSDen", 1);
 	config_set_default_string(activeConfiguration, "Video", "ScaleType", "bicubic");
 	config_set_default_string(activeConfiguration, "Video", "ColorFormat", "NV12");
@@ -1934,7 +1983,22 @@ void OBSBasic::InitBasicConfigDefaults2()
 {
 	bool oldEncDefaults = config_get_bool(App()->GetUserConfig(), "General", "Pre23Defaults");
 
-#ifdef OBS_AMD_LITE
+#ifdef OBS_MAC_LITE
+	const char *defaultStreamEnc = SIMPLE_ENCODER_X264;
+	const char *defaultRecEnc = SIMPLE_ENCODER_X264;
+	if (!oldEncDefaults) {
+		if (EncoderAvailable("com.apple.videotoolbox.videoencoder.ave.avc"))
+			defaultStreamEnc = SIMPLE_ENCODER_APPLE_H264;
+		if (EncoderAvailable("com.apple.videotoolbox.videoencoder.ave.hevc"))
+			defaultRecEnc = SIMPLE_ENCODER_APPLE_HEVC;
+		else
+			defaultRecEnc = defaultStreamEnc;
+		blog(LOG_INFO, "SiliconCast: Auto-configured Apple VideoToolbox defaults — Stream: %s, Record: %s",
+		     defaultStreamEnc, defaultRecEnc);
+	}
+	config_set_default_string(activeConfiguration, "SimpleOutput", "StreamEncoder", defaultStreamEnc);
+	config_set_default_string(activeConfiguration, "SimpleOutput", "RecEncoder", defaultRecEnc);
+#elif defined(OBS_AMD_LITE)
 	/* OBS Lite AMD Edition: Auto-detect GPU generation and set optimal defaults */
 	AMDGPUInfo gpuInfo = DetectAMDGPU();
 	const char *defaultStreamEnc = SIMPLE_ENCODER_X264;
@@ -5223,7 +5287,12 @@ void OBSBasic::on_action_Settings_triggered()
 void OBSBasic::on_actionShowMacPermissions_triggered()
 {
 #ifdef __APPLE__
-	OBSPermissions check(this, CheckPermission(kScreenCapture), CheckPermission(kVideoDeviceAccess),
+	OBSPermissions check(this, CheckPermission(kScreenCapture),
+#ifdef OBS_MAC_LITE
+			     kPermissionAuthorized,
+#else
+			     CheckPermission(kVideoDeviceAccess),
+#endif
 			     CheckPermission(kAudioDeviceAccess), CheckPermission(kAccessibility));
 	check.exec();
 #endif
@@ -6367,7 +6436,7 @@ void OBSBasic::UploadLog(const char *subdir, const char *file, const bool crash)
 void OBSBasic::on_actionShowLogs_triggered()
 {
 	char logDir[512];
-	if (GetAppConfigPath(logDir, sizeof(logDir), "rdnacast/logs") <= 0)
+	if (GetAppConfigPath(logDir, sizeof(logDir), OBS_CONFIG_SUBDIR "/logs") <= 0)
 		return;
 
 	QUrl url = QUrl::fromLocalFile(QT_UTF8(logDir));
@@ -6376,12 +6445,12 @@ void OBSBasic::on_actionShowLogs_triggered()
 
 void OBSBasic::on_actionUploadCurrentLog_triggered()
 {
-	UploadLog("rdnacast/logs", App()->GetCurrentLog(), false);
+	UploadLog(OBS_CONFIG_SUBDIR "/logs", App()->GetCurrentLog(), false);
 }
 
 void OBSBasic::on_actionUploadLastLog_triggered()
 {
-	UploadLog("rdnacast/logs", App()->GetLastLog(), false);
+	UploadLog(OBS_CONFIG_SUBDIR "/logs", App()->GetLastLog(), false);
 }
 
 void OBSBasic::on_actionViewCurrentLog_triggered()
@@ -6398,7 +6467,7 @@ void OBSBasic::on_actionViewCurrentLog_triggered()
 void OBSBasic::on_actionShowCrashLogs_triggered()
 {
 	char logDir[512];
-	if (GetAppConfigPath(logDir, sizeof(logDir), "rdnacast/crashes") <= 0)
+	if (GetAppConfigPath(logDir, sizeof(logDir), OBS_CONFIG_SUBDIR "/crashes") <= 0)
 		return;
 
 	QUrl url = QUrl::fromLocalFile(QT_UTF8(logDir));
@@ -6407,7 +6476,7 @@ void OBSBasic::on_actionShowCrashLogs_triggered()
 
 void OBSBasic::on_actionUploadLastCrashLog_triggered()
 {
-	UploadLog("rdnacast/crashes", App()->GetLastCrashLog(), true);
+	UploadLog(OBS_CONFIG_SUBDIR "/crashes", App()->GetLastCrashLog(), true);
 }
 
 void OBSBasic::on_actionCheckForUpdates_triggered()
@@ -6703,8 +6772,13 @@ void OBSBasic::StartStreaming()
 {
 	if (outputHandler->StreamingActive())
 		return;
-	if (disableOutputsRef)
+	if (disableOutputsRef) {
+#ifdef OBS_MAC_LITE
+		blog(LOG_WARNING, "SiliconCast: StartStreaming ignored because outputs are disabled (%d)",
+		     disableOutputsRef);
+#endif
 		return;
+	}
 
 	if (auth && auth->broadcastFlow()) {
 		if (!broadcastActive && !broadcastReady) {
@@ -6733,6 +6807,9 @@ void OBSBasic::StartStreaming()
 
 	auto finish_stream_setup = [&](bool setupStreamingResult) {
 		if (!setupStreamingResult) {
+#ifdef OBS_MAC_LITE
+			blog(LOG_WARNING, "SiliconCast: stream setup failed before output start");
+#endif
 			DisplayStreamStartError();
 			return;
 		}
@@ -7263,10 +7340,18 @@ void OBSBasic::StartRecording()
 {
 	if (outputHandler->RecordingActive())
 		return;
-	if (disableOutputsRef)
+	if (disableOutputsRef) {
+#ifdef OBS_MAC_LITE
+		blog(LOG_WARNING, "SiliconCast: StartRecording ignored because outputs are disabled (%d)",
+		     disableOutputsRef);
+#endif
 		return;
+	}
 
 	if (!OutputPathValid()) {
+#ifdef OBS_MAC_LITE
+		blog(LOG_WARNING, "SiliconCast: StartRecording blocked by invalid output path");
+#endif
 		OutputPathInvalidMessage();
 		return;
 	}
@@ -7879,7 +7964,7 @@ void OBSBasic::on_actionReleaseNotes_triggered()
 
 void OBSBasic::on_actionShowSettingsFolder_triggered()
 {
-	const std::string userConfigPath = App()->userConfigLocation.u8string() + "/rdnacast";
+	const std::string userConfigPath = App()->userConfigLocation.u8string() + "/" OBS_CONFIG_SUBDIR;
 	const QString userConfigLocation = QString::fromStdString(userConfigPath);
 
 	QDesktopServices::openUrl(QUrl::fromLocalFile(userConfigLocation));
@@ -8908,8 +8993,10 @@ void OBSBasic::UpdateTitleBar()
 	const char *profile = config_get_string(App()->GetUserConfig(), "Basic", "Profile");
 	const char *sceneCollection = config_get_string(App()->GetUserConfig(), "Basic", "SceneCollection");
 
-#ifdef OBS_AMD_LITE
-	name << "RDNA Cast " GK_OBS_LITE_VERSION;
+#if defined(OBS_AMD_LITE)
+	name << OBS_LITE_PRODUCT_NAME << " " << GK_OBS_LITE_VERSION;
+#elif defined(OBS_MAC_LITE)
+	name << OBS_LITE_PRODUCT_NAME << " " << App()->GetVersionString(false);
 #else
 	name << "OBS ";
 	if (previewProgramMode)
@@ -8941,7 +9028,7 @@ int OBSBasic::GetProfilePath(char *path, size_t size, const char *file) const
 	if (!file)
 		file = "";
 
-	ret = GetAppConfigPath(profiles_path, 512, "rdnacast/basic/profiles");
+	ret = GetAppConfigPath(profiles_path, 512, OBS_CONFIG_SUBDIR "/basic/profiles");
 	if (ret <= 0)
 		return ret;
 
@@ -9300,8 +9387,8 @@ void OBSBasic::SystemTrayInit()
 	QIcon trayIconFile = QIcon(":/res/images/obs.png");
 #endif
 	trayIcon.reset(new QSystemTrayIcon(QIcon::fromTheme("obs-tray", trayIconFile), this));
-#ifdef OBS_AMD_LITE
-	trayIcon->setToolTip("RDNA Cast");
+#if defined(OBS_AMD_LITE) || defined(OBS_MAC_LITE)
+	trayIcon->setToolTip(OBS_LITE_PRODUCT_NAME);
 #else
 	trayIcon->setToolTip("OBS Studio");
 #endif
@@ -10437,6 +10524,7 @@ void OBSBasic::SetDisplayAffinity(QWindow *window)
 	// TODO: Implement for other platforms if possible. Don't forget to
 	// implement SetDisplayAffinitySupported too!
 	UNUSED_PARAMETER(hideFromCapture);
+	UNUSED_PARAMETER(forceHideFromCapture);
 #endif
 }
 

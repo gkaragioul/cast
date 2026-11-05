@@ -266,9 +266,12 @@ API_AVAILABLE(macos(12.5)) void screen_stream_video_update(struct screen_capture
                 size_t width = CVPixelBufferGetWidth(image_buffer);
                 size_t height = CVPixelBufferGetHeight(image_buffer);
 
-                if ((sc->frame.size.width != width) || (sc->frame.size.height != height)) {
-                    sc->frame.size.width = width;
-                    sc->frame.size.height = height;
+                CGFloat width_float = (CGFloat) width;
+                CGFloat height_float = (CGFloat) height;
+
+                if ((sc->frame.size.width != width_float) || (sc->frame.size.height != height_float)) {
+                    sc->frame.size.width = width_float;
+                    sc->frame.size.height = height_float;
                     needs_to_update_properties = true;
                 }
             }
